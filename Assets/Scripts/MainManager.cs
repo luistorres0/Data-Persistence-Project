@@ -13,20 +13,23 @@ public class MainManager : MonoBehaviour
     public Text ScoreText;
     public Text BestScoreText;
     public GameObject GameOverText;
-    
+
     private bool m_Started = false;
     private int m_Points;
-    
+    private string m_PlayerName;
+    private int m_BestScore = 0;
+    private string m_BestScoreName;
+
     private bool m_GameOver = false;
 
-    
+
     // Start is called before the first frame update
     void Start()
     {
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -38,7 +41,10 @@ public class MainManager : MonoBehaviour
             }
         }
 
-        BestScoreText.text = $"Best Score : {GameData.Instance.getPlayerName()} : 0";
+        m_PlayerName = GameData.Instance.getPlayerName();
+        m_BestScore = GameData.Instance.GetHighScore();
+        m_BestScoreName = GameData.Instance.GetHighScoreName();
+        UpdateBestScoreText();
         AddPoint(0);
     }
 
@@ -69,13 +75,26 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"{GameData.Instance.getPlayerName()} Score : {m_Points}";
+        ScoreText.text = $"{m_PlayerName} Score : {m_Points}";
     }
 
     public void GameOver()
     {
-        BestScoreText.text = $"Best Score : {GameData.Instance.getPlayerName()} : {m_Points}";
+        if (m_Points > m_BestScore)
+        {
+            m_BestScore = m_Points;
+            m_BestScoreName = m_PlayerName;
+            GameData.Instance.SetHighScore(m_BestScore);
+            GameData.Instance.SetHighScoreName(m_BestScoreName);
+            GameData.Instance.SaveHighScoreData();
+        }
+        UpdateBestScoreText();
         m_GameOver = true;
         GameOverText.SetActive(true);
+    }
+
+    private void UpdateBestScoreText()
+    {
+        BestScoreText.text = $"Best Score : {m_BestScoreName} : {m_BestScore}";
     }
 }
